@@ -28,11 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(width: 0),
-            Text("Profile"),
-            IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-          ],
+          children: [SizedBox(width: 0), Text("Profile"), SizedBox(width: 60)],
         ),
       ),
       body: BlocBuilder<ProfileCubit, ProfileState>(

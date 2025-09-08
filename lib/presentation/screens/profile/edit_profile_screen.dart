@@ -70,10 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     context.read<ProfileCubit>().fetchUserProfile(
                       widget.userId,
                     );
-                    Navigator.pop(
-                      context,
-                      true,
-                    ); // رجّع true كإشارة إن فيه تحديث
+                    Navigator.pop(context, true);
                   },
                   icon: const Icon(Icons.done, color: Colors.lightBlue),
                 ),
@@ -255,12 +252,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                           30.verticalSpace,
 
-                          // Logout
+                          // Delete Account Button
                           GestureDetector(
-                            onTap: () {
-                              context.read<ProfileCubit>().deleteAccount(
-                                widget.userId,
+                            onTap: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Delete Account"),
+                                    content: const Text(
+                                      "Are you sure you want to delete your account? This action cannot be undone.",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: const Text("Cancel"),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          foregroundColor: Colors.red,
+                                        ),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        child: const Text("Delete"),
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
+
+                              if (confirmed == true) {
+                                context.read<ProfileCubit>().deleteAccount(
+                                  widget.userId,
+                                );
+                              }
                             },
                             child: outlinedEmptyBox(
                               borderColor: Colors.red,

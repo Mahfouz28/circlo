@@ -194,13 +194,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  radius: 30,
-                                  child: SvgPicture.asset(
-                                    AppSvg.facebook,
-                                    height: 50,
-                                    width: 50,
+                                GestureDetector(
+                                  onTap: () {
+                                    AppSnackBar.show(
+                                      context,
+                                      message: 'Coming Soon!',
+                                    );
+                                  },
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    radius: 30,
+                                    child: SvgPicture.asset(
+                                      AppSvg.facebook,
+                                      height: 50,
+                                      width: 50,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 16.w),

@@ -144,11 +144,7 @@ class _HomePageState extends State<HomePage> {
                                   builder: (_) => GetBlockedPage(),
                                 ),
                               );
-                              // AppSnackBar.show(
-                              //   context,
-                              //   message: "This user has blocked you",
-                              //   isError: true,
-                              // );
+
                               return;
                             }
 

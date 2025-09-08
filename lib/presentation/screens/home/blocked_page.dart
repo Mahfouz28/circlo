@@ -79,7 +79,7 @@ class BlockedPage extends StatelessWidget {
                     ),
                     TextSpan(
                       text:
-                          " is blocked you cant send or receive messages from this user.",
+                          " is blocked, you cant send or receive messages from this user.",
                       style: const TextStyle(
                         color: Colors.red,
                         fontSize: 16,
