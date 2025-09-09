@@ -37,6 +37,11 @@ class CustomTextFormField extends StatelessWidget {
       validator: validator, // ✅ التحقق (Validation)
       onChanged: onChanged,
       decoration: InputDecoration(
+        hintStyle: TextStyle(
+          fontSize: 14.sp,
+          color: Colors.grey,
+          fontWeight: FontWeight.w400,
+        ),
         hintText: hintText,
         labelText: labelText,
         prefixIcon: prefixIcon,

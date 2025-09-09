@@ -10,12 +10,18 @@ import 'package:chat_app/presentation/screens/auth/sign_up_screen.dart';
 import 'package:chat_app/presentation/screens/home/home_screen.dart';
 import 'package:chat_app/logic/cubit/providers/auth_providers_cubit.dart';
 import 'package:chat_app/logic/cubit/providers/auth_providers_state.dart';
+import 'package:chat_app/presentation/screens/resetPassword/reseet_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_svg/svg.dart' as svgPicture;
 
+/// Login Screen:
+/// - Allows user to login using email & password
+/// - Supports Google Sign-In
+/// - If new user → redirects to CompleteDetailsScreen
+/// - If existing user → redirects to HomePage
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -24,13 +30,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Controllers for text fields
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  // Form validation key
   final formKey = GlobalKey<FormState>();
+
+  // Password visibility toggle
   bool isPasswordVisible = false;
 
   @override
   void dispose() {
+    // Dispose controllers to avoid memory leaks
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -40,14 +52,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        // Provides AuthCubit (for email/password login)
         BlocProvider(create: (_) => AuthCubit(AuthRepository())),
+
+        // Provides AuthProvidersCubit (for Google/Facebook login)
         BlocProvider(create: (_) => AuthProvidersCubit()),
       ],
       child: Scaffold(
         body: BlocListener<AuthProvidersCubit, AuthProvidersState>(
           listener: (context, state) {
+            // ✅ Listen to AuthProviders (Google/Facebook)
             if (state is AuthProvidersSuccess) {
               if (state.user.fullName.isNotEmpty) {
+                // Existing user → go to Home
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => HomePage()),
@@ -65,18 +82,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             } else if (state is AuthProvidersError) {
+              // Show error from provider login
               AppSnackBar.show(context, message: state.error, isError: true);
             }
           },
           child: BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
+              // ✅ Listen to AuthCubit (Email/Password)
               if (state is AuthSuccess) {
+                // Login successful → go to Home
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => const HomePage()),
                 );
                 AppSnackBar.show(context, message: "Login Successful!");
               } else if (state is AuthFailure) {
+                // Show error if login fails
                 AppSnackBar.show(context, message: state.error, isError: true);
               }
             },
@@ -92,18 +113,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: 69.h),
+
+                            // Title
                             Text(
                               'Welcome Back',
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
+
                             SizedBox(height: 20.h),
+
+                            // Subtitle
                             Text(
                               'Sign in to continue',
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(color: Colors.grey),
                             ),
+
                             SizedBox(height: 20.h),
+
+                            /// Email TextField
                             CustomTextFormField(
                               hintText: 'Email',
                               prefixIcon: const Icon(Icons.email_outlined),
@@ -121,7 +150,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
+
                             SizedBox(height: 20.h),
+
+                            /// Password TextField
                             CustomTextFormField(
                               hintText: 'Password',
                               obscureText: !isPasswordVisible,
@@ -149,7 +181,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 30.h),
+                            12.verticalSpace,
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ReseetPasswordScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Text('Forget Password?'),
+                              ),
+                            ),
+
+                            SizedBox(height: 10.h),
+
+                            /// Login Button
                             CustomButton(
                               text: state is AuthLoading
                                   ? "Signing in..."
@@ -166,7 +216,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       }
                                     },
                             ),
+
                             SizedBox(height: 20.h),
+
+                            /// Sign up link
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -190,10 +243,43 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ],
                             ),
+
                             SizedBox(height: 20.h),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 40.r),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Divider(
+                                      color: Colors.grey.shade200,
+                                      thickness: 1,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8.w,
+                                    ),
+                                    child: const Text(
+                                      'or',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Divider(
+                                      color: Colors.grey.shade200,
+                                      thickness: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 40.h),
+
+                            /// Social Login (Facebook + Google)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                // Facebook (not implemented yet)
                                 GestureDetector(
                                   onTap: () {
                                     AppSnackBar.show(
@@ -212,6 +298,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                                 SizedBox(width: 16.w),
+
+                                // Google Sign-In
                                 BlocBuilder<
                                   AuthProvidersCubit,
                                   AuthProvidersState
@@ -226,7 +314,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   .signInWithGoogle();
                                             },
                                       borderRadius: BorderRadius.circular(8),
-
                                       child: state is AuthProvidersLoading
                                           ? const SizedBox(
                                               height: 20,
@@ -251,6 +338,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+
+                  /// Overlay loading indicator during login
                   if (state is AuthLoading)
                     Container(
                       color: Colors.black.withOpacity(0.4),
