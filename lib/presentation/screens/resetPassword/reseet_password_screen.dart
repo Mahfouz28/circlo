@@ -42,9 +42,9 @@ class _ReseetPasswordScreenState extends State<ReseetPasswordScreen> {
         if (accessToken != null && refreshToken != null) {
           try {
             await Supabase.instance.client.auth.setSession(refreshToken);
-            debugPrint("✅ Session restored with Supabase");
+            debugPrint(" Session restored with Supabase");
           } catch (e) {
-            debugPrint("❌ Error setting session: $e");
+            debugPrint(" Error setting session: $e");
           }
         }
 
@@ -64,7 +64,7 @@ class _ReseetPasswordScreenState extends State<ReseetPasswordScreen> {
 
     // لو اللينك جالك وانت فاتح الابلكيشن
     _appLinks.uriLinkStream.listen((uri) {
-      if (uri != null) _handleUri(uri);
+      _handleUri(uri);
     });
   }
 

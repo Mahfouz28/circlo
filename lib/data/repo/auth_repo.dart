@@ -67,6 +67,7 @@ class AuthRepository {
       }
       throw Exception("Sign up error: ${e.message}");
     } catch (e) {
+      print(e);
       throw Exception("Unexpected sign up error: $e");
     }
   }

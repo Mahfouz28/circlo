@@ -33,6 +33,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           phone: phoneNumberController.text.trim(),
           userName: usernameController.text.trim(),
         );
+
         AppSnackBar.show(context, message: 'Account created successfully!');
 
         Navigator.pushReplacement(
