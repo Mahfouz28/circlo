@@ -3,6 +3,7 @@ import 'package:chat_app/core/common/snackbar.dart';
 import 'package:chat_app/presentation/screens/resetPassword/done_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SetNewPasswordPage extends StatefulWidget {
   const SetNewPasswordPage({super.key});
@@ -14,9 +15,11 @@ class SetNewPasswordPage extends StatefulWidget {
 class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  final _formKey = GlobalKey<FormState>();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -25,11 +28,18 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     super.dispose();
   }
 
-  void _updatePassword() {
-    if (_formKey.currentState!.validate()) {
-      // Handle password update logic here
-      AppSnackBar.show(context, message: 'Password updated successfully!');
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DoneScreen()));
+  Future<void> _updatePassword(String newPassword) async {
+    try {
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      AppSnackBar.show(context, message: "Password updated successfully!");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DoneScreen()),
+      );
+    } catch (e) {
+      AppSnackBar.show(context, message: "Error: $e", isError: true);
     }
   }
 
@@ -66,16 +76,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                 ),
                 const SizedBox(height: 40),
 
-                // 🔹 Password Field
-                const Text(
-                  'Password',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                // Password
                 CustomTextFormField(
                   controller: _passwordController,
                   hintText: 'Enter your password',
@@ -109,16 +110,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
 
                 const SizedBox(height: 24),
 
-                // 🔹 Confirm Password Field
-                const Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                // Confirm Password
                 CustomTextFormField(
                   controller: _confirmPasswordController,
                   hintText: 'Confirm your password',
@@ -149,32 +141,38 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
 
                 40.verticalSpace,
 
-                // 🔹 Submit Button
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _updatePassword,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade600,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Update Password',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                // Submit
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _loading
+                        ? null
+                        : () {
+                            if (_formKey.currentState!.validate()) {
+                              _updatePassword(_passwordController.text);
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade600,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+                    child: _loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Update Password',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
+                const SizedBox(height: 40),
               ],
             ),
           ),

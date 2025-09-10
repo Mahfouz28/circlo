@@ -1,15 +1,72 @@
+import 'dart:async';
+import 'package:app_links/app_links.dart';
 import 'package:chat_app/core/common/custom_text_botton.dart';
 import 'package:chat_app/core/common/custom_text_field.dart';
 import 'package:chat_app/core/common/snackBar.dart';
-import 'package:chat_app/presentation/screens/resetPassword/otp_Screen.dart';
+import 'package:chat_app/data/repo/reset_password_repo.dart';
+import 'package:chat_app/presentation/screens/resetPassword/set_new_passwoed.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ReseetPasswordScreen extends StatelessWidget {
-  ReseetPasswordScreen({super.key});
+class ReseetPasswordScreen extends StatefulWidget {
+  const ReseetPasswordScreen({super.key});
 
+  @override
+  State<ReseetPasswordScreen> createState() => _ReseetPasswordScreenState();
+}
+
+class _ReseetPasswordScreenState extends State<ReseetPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late final AppLinks _appLinks;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinkListener();
+  }
+
+  void _initDeepLinkListener() {
+    _appLinks = AppLinks();
+
+    Future<void> _handleUri(Uri uri) async {
+      debugPrint("🔗 Received link: $uri");
+
+      if (uri.toString().contains('reset-callback')) {
+        // tokens بتيجي في fragment بعد علامة #
+        final params = Uri.splitQueryString(uri.fragment);
+        final accessToken = params["access_token"];
+        final refreshToken = params["refresh_token"];
+
+        if (accessToken != null && refreshToken != null) {
+          try {
+            await Supabase.instance.client.auth.setSession(refreshToken);
+            debugPrint("✅ Session restored with Supabase");
+          } catch (e) {
+            debugPrint("❌ Error setting session: $e");
+          }
+        }
+
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SetNewPasswordPage()),
+          );
+        }
+      }
+    }
+
+    // لو اللينك جالك قبل ما الابلكيشن يفتح
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) _handleUri(uri);
+    });
+
+    // لو اللينك جالك وانت فاتح الابلكيشن
+    _appLinks.uriLinkStream.listen((uri) {
+      if (uri != null) _handleUri(uri);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +81,7 @@ class ReseetPasswordScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 20.verticalSpace,
-                Text(
+                const Text(
                   'Forgot Password',
                   style: TextStyle(
                     fontSize: 18,
@@ -33,7 +90,7 @@ class ReseetPasswordScreen extends StatelessWidget {
                   ),
                 ),
                 5.verticalSpace,
-                Text(
+                const Text(
                   'Please enter your email to reset the password',
                   style: TextStyle(
                     fontSize: 16,
@@ -42,7 +99,7 @@ class ReseetPasswordScreen extends StatelessWidget {
                   ),
                 ),
                 20.verticalSpace,
-                Text(
+                const Text(
                   'Your Email',
                   style: TextStyle(
                     fontSize: 16,
@@ -68,16 +125,24 @@ class ReseetPasswordScreen extends StatelessWidget {
                 40.verticalSpace,
                 CustomButton(
                   text: 'Reset Password',
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      AppSnackBar.show(
-                        context,
-                        message: 'Password reset link sent!',
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => OTPScreen()),
-                      );
+                      try {
+                        await ResetPasswordRepo().resetPassword(
+                          emailController.text.trim(),
+                        );
+
+                        AppSnackBar.show(
+                          context,
+                          message: 'Password reset link sent!',
+                        );
+                      } on Exception catch (e) {
+                        AppSnackBar.show(
+                          context,
+                          message: e.toString(),
+                          isError: true,
+                        );
+                      }
                     }
                   },
                 ),
