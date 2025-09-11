@@ -5,6 +5,8 @@ import 'package:chat_app/data/model/chat_messege_model.dart';
 import 'package:chat_app/data/repo/chat_repo.dart';
 import 'package:chat_app/logic/cubit/chat/chat_cubit.dart';
 import 'package:chat_app/logic/cubit/chat/chat_status.dart';
+import 'package:chat_app/logic/cubit/profile/profile_cubit.dart';
+import 'package:chat_app/logic/cubit/profile/profile_state.dart';
 import 'package:chat_app/presentation/screens/home/blocked_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,10 +14,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatMessageScreen extends StatefulWidget {
-  const ChatMessageScreen({super.key, this.receiverId, this.receiverName});
+  const ChatMessageScreen({
+    super.key,
+    required this.receiverId,
+    required this.receiverName,
+  });
 
-  final String? receiverId;
-  final String? receiverName;
+  final String receiverId;
+  final String receiverName;
 
   @override
   State<ChatMessageScreen> createState() => _ChatMessageScreenState();
@@ -41,46 +47,74 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
       );
       return;
     }
-    context.read<ChatCubit>().loadChat(currentUserId, widget.receiverId!);
+    context.read<ChatCubit>().loadChat(currentUserId, widget.receiverId);
+    // Fetch receiver's profile
+    context.read<ProfileCubit>().fetchUserProfile(widget.receiverId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.receiverName ?? "";
-
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(.2),
-              child: Text(
-                name.isNotEmpty ? name[0].toUpperCase() : "?",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            12.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        title: BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (context, state) {
+            String name = widget.receiverName;
+            String? avatarUrl;
+
+            if (state is ProfileLoaded && state.user.id == widget.receiverId) {
+              name = state.user.fullName;
+              avatarUrl = state.user.avatarUrl;
+            } else if (state is ProfileAvatarUpdated &&
+                state.avatarUrl == widget.receiverId) {
+              avatarUrl = state.avatarUrl;
+            }
+
+            return Row(
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                BlocBuilder<ChatCubit, ChatState>(
-                  builder: (context, state) {
-                    if (state is ChatBlocked) {
-                      return const Text(
-                        "Blocked",
-                        style: TextStyle(fontSize: 12, color: Colors.red),
-                      );
-                    }
-                    return const Text(
-                      "Online",
-                      style: TextStyle(fontSize: 12, color: Colors.green),
-                    );
-                  },
+                CircleAvatar(
+                  radius: 20.r,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withOpacity(.2),
+                  backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                      ? NetworkImage(
+                          "$avatarUrl?t=${DateTime.now().millisecondsSinceEpoch}",
+                        )
+                      : null,
+                  child: avatarUrl == null || avatarUrl.isEmpty
+                      ? Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : "?",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      : null,
+                ),
+                12.horizontalSpace,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    BlocBuilder<ChatCubit, ChatState>(
+                      builder: (context, chatState) {
+                        if (chatState is ChatBlocked) {
+                          return const Text(
+                            "Blocked",
+                            style: TextStyle(fontSize: 12, color: Colors.red),
+                          );
+                        }
+                        return const Text(
+                          "Online",
+                          style: TextStyle(fontSize: 12, color: Colors.green),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         ),
         actions: [
           PopupMenuButton<String>(
@@ -99,7 +133,7 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
               if (value == "block") {
                 await context.read<ChatCubit>().blockUser(
                   currentUserId,
-                  widget.receiverId!,
+                  widget.receiverId,
                 );
                 AppSnackBar.show(
                   context,
@@ -111,15 +145,15 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
                   MaterialPageRoute(
                     builder: (_) => BlockedPage(
                       currentUserId: currentUserId,
-                      blockedUserId: widget.receiverId!,
-                      blockedUserName: widget.receiverName!,
+                      blockedUserId: widget.receiverId,
+                      blockedUserName: widget.receiverName,
                     ),
                   ),
                 );
               } else if (value == "unblock") {
                 await context.read<ChatCubit>().unblockUser(
                   currentUserId,
-                  widget.receiverId!,
+                  widget.receiverId,
                 );
                 AppSnackBar.show(
                   context,
@@ -128,7 +162,7 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
                 );
                 await context.read<ChatCubit>().loadChat(
                   currentUserId,
-                  widget.receiverId!,
+                  widget.receiverId,
                 );
               }
             },
@@ -251,7 +285,7 @@ class _ChatMessageScreenState extends State<ChatMessageScreen> {
                             context.read<ChatCubit>().sendMessage(
                               currentUserId:
                                   Supabase.instance.client.auth.currentUser!.id,
-                              otherUserId: widget.receiverId!,
+                              otherUserId: widget.receiverId,
                               type: 'text',
                               content: _messageController.text.trim(),
                             );

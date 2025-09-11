@@ -10,6 +10,9 @@ class UserModel {
   final DateTime lastSeen;
   final DateTime createdAt;
 
+  /// رابط صورة البروفايل
+  final String? avatarUrl;
+
   UserModel({
     required this.id,
     required this.fullName,
@@ -21,6 +24,7 @@ class UserModel {
     this.isOnline = false,
     DateTime? lastSeen,
     DateTime? createdAt,
+    this.avatarUrl,
   }) : lastSeen = lastSeen ?? DateTime.now(),
        createdAt = createdAt ?? DateTime.now();
 
@@ -36,6 +40,7 @@ class UserModel {
     bool? isOnline,
     DateTime? lastSeen,
     DateTime? createdAt,
+    String? avatarUrl,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -48,6 +53,7 @@ class UserModel {
       isOnline: isOnline ?? this.isOnline,
       lastSeen: lastSeen ?? this.lastSeen,
       createdAt: createdAt ?? this.createdAt,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
 
@@ -70,6 +76,7 @@ class UserModel {
       createdAt: data['created_at'] != null
           ? DateTime.parse(data['created_at'].toString())
           : DateTime.now().toUtc(),
+      avatarUrl: data['avatar_url'],
     );
   }
 
@@ -84,7 +91,7 @@ class UserModel {
       'fcm_token': fcmToken,
       'block_users': blockUsers,
       'is_online': isOnline,
-      // last_seen و created_at هي اللي بتتسجل تلقائي في DB
+      'avatar_url': avatarUrl,
     };
   }
 }

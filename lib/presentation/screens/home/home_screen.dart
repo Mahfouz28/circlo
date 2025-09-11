@@ -134,9 +134,9 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               );
-
                               return;
                             }
+
                             if (amIBlocked) {
                               Navigator.push(
                                 context,
@@ -144,7 +144,6 @@ class _HomePageState extends State<HomePage> {
                                   builder: (_) => GetBlockedPage(),
                                 ),
                               );
-
                               return;
                             }
 
@@ -165,16 +164,35 @@ class _HomePageState extends State<HomePage> {
                           },
 
                           leading: CircleAvatar(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).primaryColor.withOpacity(.2),
-                            child: Text(
-                              contact.fullName.isNotEmpty
-                                  ? contact.fullName[0].toUpperCase()
-                                  : "?",
+                            radius: 24,
+                            backgroundColor: Colors.grey.shade300,
+                            backgroundImage:
+                                (contact.avatarUrl != null &&
+                                    contact.avatarUrl!.isNotEmpty)
+                                ? NetworkImage(contact.avatarUrl!)
+                                : null,
+                            child:
+                                (contact.avatarUrl == null ||
+                                    contact.avatarUrl!.isEmpty)
+                                ? Text(
+                                    contact.fullName.isNotEmpty
+                                        ? contact.fullName[0].toUpperCase()
+                                        : "?",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
+                          ),
+
+                          title: Text(
+                            contact.fullName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          title: Text(contact.fullName),
                           subtitle: Text(contact.phoneNumber),
                         );
                       },

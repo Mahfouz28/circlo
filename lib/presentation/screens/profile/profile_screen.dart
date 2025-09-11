@@ -1,3 +1,4 @@
+import 'package:chat_app/core/common/snackbar.dart';
 import 'package:chat_app/presentation/screens/profile/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,18 +30,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [SizedBox(width: 0), Text("Profile"), SizedBox(width: 60)],
         ),
       ),
-      body: BlocBuilder<ProfileCubit, ProfileState>(
+      body: BlocConsumer<ProfileCubit, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileError) {
+            AppSnackBar.show(context, message: state.message, isError: true);
+
+            // Navigate safely
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileScreen(userId: widget.userId),
+                ),
+              );
+            }
+          }
+        },
         builder: (context, state) {
           if (state is ProfileLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is ProfileLoaded) {
+          }
+
+          if (state is ProfileLoaded) {
             final user = state.user;
             return SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
@@ -53,13 +72,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 SizedBox(
                                   height: 139.h,
                                   width: 139.w,
-
                                   child: CircleAvatar(
-                                    backgroundColor: Color(0xffD9D9D9),
-                                    child: Text(
-                                      user.fullName[0].toUpperCase(),
-                                      style: TextStyle(fontSize: 40.sp),
-                                    ),
+                                    radius: 70.r,
+                                    backgroundColor: const Color(0xffD9D9D9),
+                                    backgroundImage:
+                                        (user.avatarUrl != null &&
+                                            user.avatarUrl!.isNotEmpty)
+                                        ? NetworkImage(user.avatarUrl!)
+                                        : null,
+                                    child:
+                                        (context.watch<ProfileCubit>().state
+                                            is ProfileUploadingAvatar)
+                                        ? CircularProgressIndicator(
+                                            color: Colors.lightBlue,
+                                          )
+                                        : (user.avatarUrl == null ||
+                                              user.avatarUrl!.isEmpty)
+                                        ? Text(
+                                            user.fullName[0].toUpperCase(),
+                                            style: TextStyle(
+                                              fontSize: 40.sp,
+                                              color: Colors.black,
+                                            ),
+                                          )
+                                        : null,
                                   ),
                                 ),
                                 Positioned(
@@ -67,25 +103,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   bottom: 20,
                                   child: GestureDetector(
                                     onTap: () async {
-                                      Navigator.push(
+                                      final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               EditProfileScreen(
                                                 userId: widget.userId,
                                               ),
-                                        ), // Pass the userId to EditProfileScreen
+                                        ),
                                       );
-                                      if (await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditProfileScreen(
-                                                    userId: widget.userId,
-                                                  ),
-                                            ),
-                                          ) ==
-                                          true) {
+
+                                      // Refresh profile if EditProfileScreen returns true
+                                      if (result == true) {
                                         context
                                             .read<ProfileCubit>()
                                             .fetchUserProfile(widget.userId);
@@ -103,6 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ],
                             ),
+                            SizedBox(height: 8.h),
                             Text(
                               user.fullName,
                               style: TextStyle(
@@ -123,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       14.verticalSpace,
                       Text(
-                        'You Email',
+                        'Your Email',
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.bold,
@@ -183,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       14.verticalSpace,
                       Text(
-                        'full Name',
+                        'Full Name',
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.bold,
@@ -197,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             children: [
-                              Icon(Icons.phone, color: Colors.lightBlue),
+                              Icon(Icons.person, color: Colors.lightBlue),
                               8.horizontalSpace,
                               Text(
                                 user.fullName,
@@ -246,9 +276,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             );
-          } else if (state is ProfileError) {
-            return Center(child: Text("Error: ${state.errorMessage}"));
           }
+
+          // Default fallback
           return const Center(child: Text("No data"));
         },
       ),
@@ -262,13 +292,13 @@ Widget outlinedEmptyBox({
   double borderRadius = 12,
   double borderWidth = 1,
   Color borderColor = Colors.lightBlue,
-  final child,
+  required Widget child,
 }) {
   return Container(
     width: width,
     height: height,
     decoration: BoxDecoration(
-      color: Colors.transparent, // فارغة من جوّا
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(color: borderColor, width: borderWidth),
     ),
