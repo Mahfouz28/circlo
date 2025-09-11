@@ -1,5 +1,8 @@
+import 'package:chat_app/data/repo/auth_repo.dart';
 import 'package:chat_app/data/repo/profile_repo.dart';
 import 'package:chat_app/logic/cubit/profile/profile_state.dart';
+import 'package:chat_app/presentation/screens/auth/login_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
@@ -41,11 +44,22 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> deleteAccount(String userId) async {
+  Future<void> deleteAccount(String userId, BuildContext context) async {
     emit(ProfileLoading());
     try {
       await profileRepo.deleteAccount(userId);
+
+      await AuthRepository().signOut();
+
       emit(ProfileDeleted());
+
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      }
     } catch (e) {
       emit(ProfileError(e.toString()));
     }

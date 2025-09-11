@@ -132,13 +132,9 @@ class AuthRepository {
   // -------------------- Save User Data --------------------
   Future<void> saveUserData(UserModel user) async {
     try {
-      final response = await supabase
-          .from('users')
-          .upsert(user.toMap(), onConflict: 'id');
+      await supabase.from('users').upsert(user.toMap(), onConflict: 'id');
 
-      if (response.error != null) {
-        throw Exception("Failed to save user: ${response.error!.message}");
-      }
+      debugPrint(" User saved successfully");
     } on PostgrestException catch (e) {
       if (e.code == "23505") {
         throw Exception("Duplicate entry: ${e.message}");

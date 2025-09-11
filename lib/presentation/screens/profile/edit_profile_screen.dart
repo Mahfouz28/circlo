@@ -286,6 +286,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               if (confirmed == true) {
                                 context.read<ProfileCubit>().deleteAccount(
                                   widget.userId,
+                                  context,
                                 );
                               }
                             },
