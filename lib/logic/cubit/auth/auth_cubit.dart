@@ -6,8 +6,7 @@ class AuthCubit extends Cubit<AuthState> {
   final AuthRepository authRepository;
 
   AuthCubit(this.authRepository) : super(AuthInitial());
-
-  // تسجيل مستخدم جديد
+  // تسجيل مستخدم جديد (Cubit)
   Future<void> signUp({
     required String email,
     required String password,
@@ -24,9 +23,13 @@ class AuthCubit extends Cubit<AuthState> {
         phone: phone,
         userName: userName,
       );
+
       emit(AuthSuccess(user));
     } catch (e) {
-      emit(AuthFailure(e.toString()));
+      final errorMessage = e is Exception
+          ? e.toString().replaceFirst('Exception: ', '')
+          : e.toString();
+      emit(AuthFailure(errorMessage));
     }
   }
 

@@ -16,7 +16,7 @@ class _SplashScreenState extends State<DoneScreen> {
   void initState() {
     super.initState();
 
-    // Navigate after 2 seconds
+    // Navigate after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -28,7 +28,7 @@ class _SplashScreenState extends State<DoneScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // No need for const here
+      backgroundColor: Colors.white,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.r),
         child: Column(

@@ -1,5 +1,7 @@
 import 'package:chat_app/config/theme/app_theme.dart';
 import 'package:chat_app/data/repo/profile_repo.dart';
+import 'package:chat_app/logic/cubit/auth/auth_cubit.dart';
+import 'package:chat_app/data/repo/auth_repo.dart';
 import 'package:chat_app/logic/cubit/chat/chat_cubit.dart';
 import 'package:chat_app/logic/cubit/profile/profile_cubit.dart';
 import 'package:chat_app/presentation/screens/splash/splash_screen.dart';
@@ -35,6 +37,7 @@ class MyAppProviders extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => ChatCubit(sl<ChatRepo>())),
         BlocProvider(create: (context) => ProfileCubit(ProfileRepo())),
+        BlocProvider(create: (context) => AuthCubit(sl<AuthRepository>())),
       ],
       child: const MyApp(),
     );

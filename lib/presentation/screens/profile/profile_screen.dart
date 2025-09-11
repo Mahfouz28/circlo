@@ -1,5 +1,3 @@
-import 'package:chat_app/data/repo/auth_repo.dart';
-import 'package:chat_app/presentation/screens/auth/login_screen.dart';
 import 'package:chat_app/presentation/screens/profile/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -240,45 +238,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ),
-                      30.verticalSpace,
-                      GestureDetector(
-                        onTap: () {
-                          AuthRepository().signOut();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LoginScreen(),
-                            ),
-                          );
-                        },
-                        child: outlinedEmptyBox(
-                          borderColor: Colors.red,
-                          width: double.infinity,
-                          height: 50.h,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.logout_outlined,
-                                  color: Colors.redAccent,
-                                ),
-                                96.horizontalSpace,
-                                Center(
-                                  child: Text(
-                                    'Logout',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 20.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                         ),
                       ),

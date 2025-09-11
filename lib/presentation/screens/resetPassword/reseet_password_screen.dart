@@ -122,6 +122,30 @@ class _ReseetPasswordScreenState extends State<ReseetPasswordScreen> {
                     return null;
                   },
                 ),
+                10.verticalSpace,
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '*',
+                        style: TextStyle(
+                          color: Colors.red[700],
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      TextSpan(
+                        text:
+                            ' If your Account is registered by google or facebook, you\n   can\'t reset your password by email',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12.sp,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
                 40.verticalSpace,
                 CustomButton(
                   text: 'Reset Password',
@@ -134,7 +158,8 @@ class _ReseetPasswordScreenState extends State<ReseetPasswordScreen> {
 
                         AppSnackBar.show(
                           context,
-                          message: 'Password reset link sent!',
+                          message:
+                              'Password reset link sent! ,Check your email.',
                         );
                       } on Exception catch (e) {
                         AppSnackBar.show(

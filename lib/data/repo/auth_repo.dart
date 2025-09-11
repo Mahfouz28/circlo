@@ -41,9 +41,7 @@ class AuthRepository {
       );
 
       if (response.user == null) {
-        throw Exception(
-          "Sign up failed: ${response.session?.user.id ?? "Unknown error"}",
-        );
+        throw Exception("Sign up failed: No user returned from Supabase");
       }
 
       final userModel = UserModel(
@@ -56,18 +54,18 @@ class AuthRepository {
       );
 
       await saveUserData(userModel);
+
       return userModel;
     } on AuthException catch (e) {
-      if (e.statusCode == "400") {
-        throw Exception("Invalid sign-up data: ${e.message}");
-      } else if (e.statusCode == "422") {
-        throw Exception("Weak password or invalid email format");
-      } else if (e.statusCode == "409") {
+      if (e.message.contains("already registered") || e.statusCode == "409") {
         throw Exception("This email is already registered");
+      } else if (e.message.contains("password") || e.statusCode == "422") {
+        throw Exception("Weak password or invalid email format");
+      } else if (e.statusCode == "400") {
+        throw Exception("Invalid sign-up data: ${e.message}");
       }
-      throw Exception("Sign up error: ${e.message}");
+      throw Exception("Auth error: ${e.message}");
     } catch (e) {
-      print(e);
       throw Exception("Unexpected sign up error: $e");
     }
   }
